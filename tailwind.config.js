@@ -13,6 +13,7 @@ module.exports = {
         input: {
           background: "#3F4751",
         },
+        link: "#5169E1",
       },
       borderRadius: {
         lg: "5px",

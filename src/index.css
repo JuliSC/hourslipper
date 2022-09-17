@@ -130,9 +130,18 @@
   .btn-emoji:hover {
     background-color: theme("colors.component.active");
   }
+
+  .link {
+    color: theme("colors.link");
+  }
 }
 
 @layer utilities {
-  .divider {
+  .flex-1-1-1 {
+    flex: 1 1 1px;
+  }
+
+  .max-h-500 {
+    max-height: 40rem;
   }
 }

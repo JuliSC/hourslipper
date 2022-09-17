@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-grow">
+  <div class="flex-grow basis-0">
     <label class="inline-block" :for="title">{{ title }}</label>
     <input
       :id="title"
@@ -9,6 +9,9 @@
       class="text-field block w-full"
       type="text"
     />
+    <p class="text-xs">
+      <slot></slot>
+    </p>
   </div>
 </template>
 

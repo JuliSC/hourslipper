@@ -1,13 +1,13 @@
 <template>
-  <div class="flex-grow cursor-default">
-    <label :for="title">{{ title }}</label>
-    <div class="relative">
+  <div class="flex-grow basis-0 cursor-default">
+    <label class="inline-block" :for="title">{{ title }}</label>
+    <div class="relative w-full">
       <div
         tabindex="0"
         @click="showOptions"
-        class="relative w-full select-field-button"
+        class="relative block select-field-button"
       >
-        <p class="block select-none">{{ modelValue }}</p>
+        <p class="select-none">{{ modelValue }}</p>
       </div>
       <Transition
         leave-active-class="transition ease-in duration-100"
