@@ -72,8 +72,8 @@
           />
           <InputField
             class="px-1 flex-grow-0"
-            v-model="separater"
-            title="Separater"
+            v-model="separator"
+            title="separator"
           />
         </div>
         <div class="card-row">
@@ -83,6 +83,12 @@
             v-model="weekdayFormat"
             :options="weekdayOptions"
           />
+          <SelectField
+            class="px-1"
+            title="Language"
+            v-model="language"
+            :options="langOptions"
+          />
         </div>
       </article>
       <div class="card-actions">
@@ -91,7 +97,7 @@
         </button>
       </div>
     </div>
-    <div class="card max-h-500 relative overflow-y-scroll">
+    <div class="card fine-scrollbar max-h-500 relative overflow-y-scroll">
       <div class="card-body">
         <div class="card-title">
           <span @click="copyTable('#entry-table')" class="btn-emoji">📋</span>
@@ -136,29 +142,76 @@ import axios from "axios";
 import DateField from "@/components/DateField.vue";
 import InputField from "@/components/InputField.vue";
 import SelectField from "@/components/SelectField.vue";
+import { NumberHelper } from "@/utils/NumberHelper";
+import { DateHelper } from "@/utils/DateHelper";
+import { ArrayHelper } from "@/utils/ArrayHelper";
+
+// Types
+type Entry = {
+  start: string;
+  duration: number;
+};
 
 // Required for entries
 const apiKey = ref<string>("");
 const startDate = ref<string>("");
 const endDate = ref<string>("");
-const entries = ref<{ start: string; duration: number }[]>([]);
+const entries = ref<Entry[]>([]);
 
 // Options
 const hoursAppend = ref<string>("");
 const dateHeader = ref<string>("");
 const hoursHeader = ref<string>("");
-const dateFormat = ref<string>("DD-MM-YYYY");
-const dateFormatOptions = ref<Array<string>>([
-  "DD-MM-YYYY",
-  "MM-DD-YYYY",
-  "YYYY-MM-DD",
+const dateFormat = ref<{ name: string; value: string }>({
+  name: "DD-MM-YYYY",
+  value: "en-UK",
+});
+const dateFormatOptions = ref<Array<{ name: string; value: string }>>([
+  {
+    name: "DD-MM-YYYY",
+    value: "en-UK",
+  },
+  {
+    name: "MM-DD-YYYY",
+    value: "en-US",
+  },
+  {
+    name: "YYYY-MM-DD",
+    value: "en-CA",
+  },
 ]);
-const separater = ref<string>("-");
-const weekdayFormat = ref<string>("Not included");
-const weekdayOptions = ref<Array<string>>([
-  "Not included",
-  "Short (Mon, Tue...)",
-  "Full (Monday, Tuesday...)",
+const separator = ref<string>("-");
+const weekdayFormat = ref<{ name: string; value: string }>({
+  name: "Not included",
+  value: "none",
+});
+const weekdayOptions = ref<Array<{ name: string; value: string }>>([
+  {
+    name: "Not included",
+    value: "none",
+  },
+  {
+    name: "Short (Mon, Tue...)",
+    value: "short",
+  },
+  {
+    name: "Full (Monday, Tuesday...)",
+    value: "long",
+  },
+]);
+const language = ref<{ name: string; value: string }>({
+  name: "English",
+  value: "en-US",
+});
+const langOptions = ref<Array<{ name: string; value: string }>>([
+  {
+    name: "English",
+    value: "english",
+  },
+  {
+    name: "Danish",
+    value: "da-DK",
+  },
 ]);
 const total = ref<number>(0);
 
@@ -177,17 +230,15 @@ function updateDate(e: Record<string, unknown>) {
 }
 
 async function generateEntryTable() {
-  const togglEntries: { start: string; duration: number }[] =
-    await getEntries();
+  const togglEntries: Entry[] = await getEntries();
   entries.value = formatEntries(togglEntries);
   entries.value = groupEntries(entries.value);
   const list: number[] = getListOfAttr(entries.value, "duration") as number[];
-  total.value = getTotal(list);
-  console.log(total.value);
+  total.value = ArrayHelper.getTotal(list);
 }
 
 async function getEntries() {
-  const entries: { start: string; duration: number }[] = await axios(
+  const entries: Entry[] = await axios(
     "https://api.track.toggl.com/api/v8/time_entries",
     {
       method: "GET",
@@ -196,10 +247,7 @@ async function getEntries() {
         end_date: `${endDate.value}T23:59:59+00:00`,
       },
       auth: {
-        username:
-          apiKey.value.length > 0
-            ? apiKey.value
-            : "7dfe5d3ff1b0d0016c7863f92e99a736",
+        username: apiKey.value,
         password: "api_token",
       },
     },
@@ -214,15 +262,35 @@ async function getEntries() {
   return entries;
 }
 
-function formatEntries(entries: { start: string; duration: number }[]) {
-  const formattedEntries: { start: string; duration: number }[] = [];
+function formatEntries(entries: Entry[]) {
+  const formattedEntries: Entry[] = [];
+
   entries.forEach(entry => {
     const formattedEntry = { ...objWithPropsFromObj(entry) };
-    formattedEntry.start = formatDate(
-      formattedEntry.start,
-      dateFormat.value,
-      weekdayFormat.value,
+    const entryDate = formattedEntry.start;
+
+    // Formatting date
+    formattedEntry.start = DateHelper.formatDate(
+      entryDate,
+      dateFormat.value.value,
     );
+
+    // Setting separator
+    formattedEntry.start = DateHelper.setSeparator(
+      formattedEntry.start,
+      separator.value,
+    );
+
+    // Getting weekday
+    if (weekdayFormat.value.value !== "none") {
+      const weekDay = DateHelper.getWeekDay(
+        entryDate,
+        weekdayFormat.value.value,
+        language.value.value,
+      );
+      formattedEntry.start = `${weekDay} ${formattedEntry.start}`;
+    }
+
     formattedEntry.duration = formatDuration(formattedEntry.duration);
 
     formattedEntries.push(formattedEntry);
@@ -231,7 +299,7 @@ function formatEntries(entries: { start: string; duration: number }[]) {
   return formattedEntries;
 }
 
-function objWithPropsFromObj(entry: { start: string; duration: number }) {
+function objWithPropsFromObj(entry: Entry) {
   const formattedEntry = {
     start: entry.start,
     duration: entry.duration,
@@ -240,10 +308,10 @@ function objWithPropsFromObj(entry: { start: string; duration: number }) {
   return formattedEntry;
 }
 
-function groupEntries(entries: { start: string; duration: number }[]) {
-  const groupedEntries: { start: string; duration: number }[] = [];
+function groupEntries(entries: Entry[]) {
+  const groupedEntries: Entry[] = [];
 
-  entries.forEach((entry: { start: string; duration: number }) => {
+  entries.forEach((entry: Entry) => {
     const groupedDate = groupedEntries.find(newEntry => {
       return newEntry.start === entry.start;
     });
@@ -258,81 +326,6 @@ function groupEntries(entries: { start: string; duration: number }[]) {
   return groupedEntries;
 }
 
-function formatDate(date: string, dateFormat: string, weekdayFormat: string) {
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  };
-
-  options.weekday = getWeekdayFormat(weekdayFormat);
-  const locale: string = getLocale(dateFormat);
-
-  let formattedDate: string = new Date(date).toLocaleString(locale, options);
-
-  if (separater.value.length > 0) {
-    formattedDate = fixLocaleDifferences(formattedDate);
-  }
-
-  return formattedDate;
-}
-
-function getWeekdayFormat(format: string) {
-  switch (format) {
-    case "Not included":
-      return undefined;
-    case "Short (Mon, Tue...)":
-      return "short";
-    case "Full (Monday, Tuesday...)":
-      return "long";
-    default:
-      return undefined;
-  }
-}
-
-function getLocale(format: string) {
-  if (navigator.languages[navigator.languages.length - 1] === "da") {
-    return "da-DK";
-  }
-
-  switch (format) {
-    case "DD-MM-YYYY":
-      return "en-UK";
-    case "MM-DD-YYYY":
-      return "en-US";
-    case "YYYY-MM-DD":
-      return "en-CA";
-    default:
-      return "en-US";
-  }
-}
-
-function fixLocaleDifferences(str: string) {
-  const splitStr: Array<string> = str.split(" ");
-
-  console.log(splitStr);
-
-  let day = "";
-  let date = "";
-  switch (splitStr.length) {
-    case 2:
-      day = `${capitalize(splitStr[0])} `;
-    case 1:
-      date = splitStr[splitStr.length - 1].replace(/-|\/|\./g, separater.value);
-      break;
-    default:
-      break;
-  }
-
-  return `${day}${date}`;
-}
-
-function round(value: number, step: number) {
-  step || (step = 1.0);
-  const inv: number = 1.0 / step;
-  return Math.round(value * inv) / inv;
-}
-
 function getListOfAttr(arr: { [key: string]: unknown }[], attr: string) {
   const list: unknown[] = [];
 
@@ -344,21 +337,8 @@ function getListOfAttr(arr: { [key: string]: unknown }[], attr: string) {
   return list;
 }
 
-function getTotal(arr: number[]) {
-  let total = 0;
-  arr.forEach(num => {
-    total += num;
-  });
-
-  return total;
-}
-
 function formatDuration(duration: number) {
-  return round(duration / 60 / 60, 0.5);
-}
-
-function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return NumberHelper.round(duration / 60 / 60, 0.5);
 }
 
 function copyTable(tableId: string) {

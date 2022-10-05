@@ -1,4 +1,4 @@
-import { Employee } from "./Employee";
+import { Employee } from "../classes/Employee";
 
 let employee: Employee;
 

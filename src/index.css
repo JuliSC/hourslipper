@@ -12,10 +12,32 @@
     background: linear-gradient(#e66465, #9198e5);
     background-size: cover;
     background-attachment: fixed;
+    padding: 20px;
   }
 }
 
 @layer components {
+  .fine-scrollbar::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  .fine-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Handle */
+  .fine-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    width: 5px;
+    border-radius: 10px;
+    margin-top: 5px;
+  }
+
+  /* Handle on hover */
+  .fine-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
   .header {
     font-size: 7rem;
     color: white;

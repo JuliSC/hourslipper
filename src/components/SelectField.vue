@@ -7,7 +7,7 @@
         @click="showOptions"
         class="relative block select-field-button"
       >
-        <p class="select-none">{{ modelValue }}</p>
+        <p class="select-none">{{ modelValue.name }}</p>
       </div>
       <Transition
         leave-active-class="transition ease-in duration-100"
@@ -21,11 +21,10 @@
           <li
             class="hover:bg-slate-500 p-1"
             v-for="option in options"
-            :value="option"
-            @click="select"
-            :key="option"
+            @click="select(option)"
+            :key="option.value"
           >
-            {{ option }}
+            {{ option.name }}
           </li>
         </div>
       </Transition>
@@ -34,13 +33,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { PropType, ref } from "vue";
 
 const props = defineProps({
-  modelValue: { type: String, default: "" },
+  modelValue: {
+    type: Object as PropType<{ name: string; value: string }>,
+    default: () => {
+      return { name: "", value: "" };
+    },
+  },
   title: { type: String, default: "" },
   placeholder: { type: String, default: "" },
-  options: { type: Array<string>, default: [] },
+  options: { type: Array<{ name: string; value: string }>, default: () => [] },
 });
 
 const show = ref<boolean>(false);
@@ -61,9 +65,9 @@ function showOptions() {
   }
 }
 
-function select(e: Event) {
+function select(option: { name: string; value: string }) {
   show.value = false;
-  const target = e.target as HTMLInputElement;
-  emit("update:modelValue", target.innerHTML);
+
+  emit("update:modelValue", option);
 }
 </script>

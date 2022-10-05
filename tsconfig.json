@@ -7,7 +7,9 @@
       "@/*": ["./src/*", "./*'"]
     },
     "types": ["jest", "node"],
-    "typeRoots": ["./node_modules/@types"]
+    "typeRoots": ["./node_modules/@types"],
+    "preserveValueImports": false,
+    "importsNotUsedAsValues": "preserve"
   },
 
   "references": [
