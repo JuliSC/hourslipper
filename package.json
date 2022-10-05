@@ -6,7 +6,7 @@
     "start": "vite --port 8080",
     "build": "run-p type-check build-only",
     "test": "jest",
-    "preview": "vite preview --port 4173",
+    "preview": "vite preview --port 8080",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
