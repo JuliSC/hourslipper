@@ -146,6 +146,10 @@ import { NumberHelper } from "@/utils/NumberHelper";
 import { DateHelper } from "@/utils/DateHelper";
 import { ArrayHelper } from "@/utils/ArrayHelper";
 
+// createUser();
+// callApi();
+login();
+
 // Types
 type Entry = {
   start: string;
@@ -216,6 +220,51 @@ const langOptions = ref<Array<{ name: string; value: string }>>([
 const total = ref<number>(0);
 
 // Functions
+function callApi() {
+  axios("http://localhost:3000/users", {
+    method: "GET",
+    headers: {
+      "Access-Control-Allow-Origin": true,
+    },
+  }).then(res => {
+    console.log(res.data);
+  });
+}
+
+function createUser() {
+  axios("http://localhost:3000/users", {
+    method: "POST",
+    headers: {
+      "Access-Control-Allow-Origin": true,
+    },
+    data: {
+      fullName: "Julius",
+      isAdmin: false,
+      email: "test@test.test",
+      password: "pass1234",
+    },
+  }).then(res => {
+    console.log(res.data);
+  });
+}
+
+function login() {
+  axios("http://localhost:3000/auth/login", {
+    method: "POST",
+    headers: {
+      "Access-Control-Allow-Origin": true,
+    },
+    data: {
+      fullName: "Julius",
+      isAdmin: false,
+      email: "test@test.test",
+      password: "pass1234",
+    },
+  }).then(res => {
+    console.log(res.data);
+  });
+}
+
 function updateDate(e: Record<string, unknown>) {
   switch (e.dateType) {
     case "start":
@@ -247,7 +296,8 @@ async function getEntries() {
         end_date: `${endDate.value}T23:59:59+00:00`,
       },
       auth: {
-        username: apiKey.value,
+        username:
+          apiKey.value.length > 0 ? apiKey.value : import.meta.env.VITE_API_KEY,
         password: "api_token",
       },
     },

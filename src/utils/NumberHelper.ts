@@ -14,4 +14,10 @@ export class NumberHelper {
     const inv: number = 1.0 / step;
     return Math.round(value * inv) / inv;
   }
+
+  public static iterPrint(start: number, end: number) {
+    for (let i = start; i <= end; i++) {
+      console.log(i);
+    }
+  }
 }
