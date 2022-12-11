@@ -4,7 +4,7 @@
       {{ props.title }}
     </label>
     <input
-      class="date-field block rounded w-full"
+      class="date-field block rounded w-full text-sm p-2"
       type="date"
       :id="props.dateType"
       name="entry-start"

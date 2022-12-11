@@ -7,7 +7,7 @@
         @click="showOptions"
         class="relative block select-field-button"
       >
-        <p class="select-none">{{ modelValue.name }}</p>
+        <p class="select-none p-1 text-sm">{{ modelValue.name }}</p>
       </div>
       <Transition
         leave-active-class="transition ease-in duration-100"
@@ -19,7 +19,7 @@
           class="select-field-list z-10 list-none absolute mt-1 max-h-56 w-full overflow-auto rounded shadow-lg"
         >
           <li
-            class="hover:bg-slate-500 p-1"
+            class="hover:bg-slate-500 text-sm p-2"
             v-for="option in options"
             @click="select(option)"
             :key="option.value"

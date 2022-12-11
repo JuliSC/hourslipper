@@ -6,8 +6,8 @@
       :placeholder="placeholder"
       :value="modelValue"
       @input="handleInput"
-      class="text-field block w-full"
-      type="text"
+      class="text-field text-sm block w-full p-2"
+      :type="type"
     />
     <p class="text-xs">
       <slot></slot>
@@ -20,6 +20,7 @@ const props = defineProps({
   modelValue: { type: String, default: "" },
   title: { type: String, default: "" },
   placeholder: { type: String, default: "" },
+  type: { type: String, default: "text" },
 });
 
 const emit = defineEmits(["update:modelValue"]);

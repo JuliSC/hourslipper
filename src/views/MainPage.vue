@@ -148,7 +148,7 @@ import { ArrayHelper } from "@/utils/ArrayHelper";
 
 // createUser();
 // callApi();
-login();
+// login();
 
 // Types
 type Entry = {
@@ -248,23 +248,6 @@ function createUser() {
   });
 }
 
-function login() {
-  axios("http://localhost:3000/auth/login", {
-    method: "POST",
-    headers: {
-      "Access-Control-Allow-Origin": true,
-    },
-    data: {
-      fullName: "Julius",
-      isAdmin: false,
-      email: "test@test.test",
-      password: "pass1234",
-    },
-  }).then(res => {
-    console.log(res.data);
-  });
-}
-
 function updateDate(e: Record<string, unknown>) {
   switch (e.dateType) {
     case "start":
@@ -287,27 +270,21 @@ async function generateEntryTable() {
 }
 
 async function getEntries() {
-  const entries: Entry[] = await axios(
-    "https://api.track.toggl.com/api/v8/time_entries",
-    {
-      method: "GET",
-      params: {
-        start_date: `${startDate.value}T00:00:00+00:00`,
-        end_date: `${endDate.value}T23:59:59+00:00`,
-      },
-      auth: {
-        username:
-          apiKey.value.length > 0 ? apiKey.value : import.meta.env.VITE_API_KEY,
-        password: "api_token",
-      },
+  const entries: Entry[] = await axios("http://localhost:3000/toggl", {
+    method: "POST",
+    headers: {
+      "Access-Control-Allow-Origin": true,
     },
-  )
-    .then(res => {
-      return res.data;
-    })
-    .catch(err => {
-      console.log(err);
-    });
+    data: {
+      username:
+        apiKey.value.length > 0 ? apiKey.value : import.meta.env.VITE_API_KEY,
+      startDate: startDate.value,
+      endDate: endDate.value,
+    },
+  }).then(res => {
+    console.log(res.data);
+    return res.data;
+  });
 
   return entries;
 }
