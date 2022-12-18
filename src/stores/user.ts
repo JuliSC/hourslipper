@@ -70,7 +70,7 @@ export const useUserStore = defineStore({
   },
   actions: {
     signUp(email: string, username: string, password: string) {
-      axios("http://localhost:3000/users", {
+      axios("/api/users", {
         method: "POST",
         headers: {
           "Access-Control-Allow-Origin": true,
@@ -98,7 +98,7 @@ export const useUserStore = defineStore({
         });
     },
     login(email: string, password: string) {
-      axios("http://localhost:3000/auth/login", {
+      axios("/api/auth/login", {
         method: "POST",
         headers: {
           "Access-Control-Allow-Origin": true,
@@ -127,7 +127,7 @@ export const useUserStore = defineStore({
       const token = localStorage.getItem("token");
       const user = localStorage.getItem("user");
 
-      axios("http://localhost:3000/auth/verify", {
+      axios("/api/auth/verify", {
         method: "GET",
         headers: {
           "Access-Control-Allow-Origin": true,
@@ -165,8 +165,6 @@ export const useUserStore = defineStore({
       router.push("/login");
     },
     setUserCredentials(credentials: { user: User; accessToken: string }) {
-      console.log(credentials);
-
       const user: User = {
         email: credentials.user.email,
         username: credentials.user.username,
@@ -185,7 +183,7 @@ export const useUserStore = defineStore({
       localStorage.setItem("user", JSON.stringify(user));
     },
     updateAccountSettings() {
-      axios(`http://localhost:3000/users/settings`, {
+      axios(`/api/users/settings`, {
         method: "PATCH",
         headers: {
           "Access-Control-Allow-Origin": true,

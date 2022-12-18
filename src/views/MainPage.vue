@@ -28,7 +28,7 @@
             <DateField
               title="From"
               dateType="start"
-              :value="defaultStartDate.toDateString()"
+              :value="defaultStartDate.toString()"
               @update-date="updateDate($event)"
             />
           </div>
@@ -36,7 +36,7 @@
             <DateField
               title="To"
               dateType="end"
-              :value="defaultEndDate.toDateString()"
+              :value="defaultEndDate.toString()"
               @update-date="updateDate($event)"
             />
           </div>
@@ -304,16 +304,13 @@ async function generateEntryTable() {
 }
 
 async function getEntries() {
-  const entries: Entry[] = await axios("http://localhost:3000/toggl", {
+  const entries: Entry[] = await axios("/api/toggl", {
     method: "POST",
     headers: {
       "Access-Control-Allow-Origin": true,
     },
     data: {
-      username:
-        savedSettings.value.apiKey.length > 0
-          ? savedSettings.value.apiKey
-          : import.meta.env.VITE_API_KEY,
+      username: savedSettings.value.apiKey,
       startDate: startDate.value,
       endDate: endDate.value,
     },
