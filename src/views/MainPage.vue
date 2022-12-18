@@ -28,7 +28,7 @@
             <DateField
               title="From"
               dateType="start"
-              :value="lastMonth.toDateString()"
+              :value="defaultStartDate.toDateString()"
               @update-date="updateDate($event)"
             />
           </div>
@@ -36,7 +36,7 @@
             <DateField
               title="To"
               dateType="end"
-              :value="today.toDateString()"
+              :value="defaultEndDate.toDateString()"
               @update-date="updateDate($event)"
             />
           </div>
@@ -105,7 +105,9 @@
     <div class="card fine-scrollbar max-h-500 relative overflow-y-scroll">
       <div class="card-body">
         <div class="card-title">
-          <span @click="copyTable('#entry-table')" class="btn-emoji">📋</span>
+          <span @click="copyTable('#entry-table')" class="btn-emoji">
+            <font-awesome-icon icon="fas fa-clipboard"></font-awesome-icon>
+          </span>
         </div>
 
         <table class="data-table" id="entry-table">
@@ -159,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import axios from "axios";
 import DateField from "@/components/DateField.vue";
 import InputField from "@/components/InputField.vue";
@@ -168,8 +170,10 @@ import { NumberHelper } from "@/utils/NumberHelper";
 import { DateHelper } from "@/utils/DateHelper";
 import { ArrayHelper } from "@/utils/ArrayHelper";
 import { useUserStore } from "@/stores/user";
+import { useNotificationStore } from "@/stores/notification";
 
 const userStore = useUserStore();
+const notificationStore = useNotificationStore();
 
 // Types
 type Entry = {
@@ -177,10 +181,12 @@ type Entry = {
   duration: number;
 };
 
-const today = new Date();
-const lastMonth = new Date();
-// this day last month
-lastMonth.setMonth(today.getMonth() - 1);
+onMounted(() => {
+  const today = new Date();
+  const lastMonth = new Date();
+  // this day last month
+  lastMonth.setMonth(today.getMonth() - 1);
+});
 
 // Required for entries
 
@@ -189,6 +195,15 @@ const endDate = ref<string>("");
 const entries = ref<Entry[]>([]);
 
 // Options
+
+const defaultEndDate = ref<Date>(new Date());
+const defaultStartDate = ref<Date>(
+  new Date(
+    `${new Date().getFullYear()}-${
+      new Date().getMonth() === 0 ? 11 : new Date().getMonth()
+    }-${new Date().getDate()}`,
+  ),
+);
 
 const settings = ref<{
   apiKey: string;
@@ -218,14 +233,6 @@ const settings = ref<{
     value: "en",
   },
 });
-// const apiKey = ref<string>("");
-// const hoursAppend = ref<string>("");
-// const dateHeader = ref<string>("");
-// const hoursHeader = ref<string>("");
-// const dateFormat = ref<{ name: string; value: string }>({
-//   name: "DD-MM-YYYY",
-//   value: "en-UK",
-// });
 const dateFormatOptions = ref<Array<{ name: string; value: string }>>([
   {
     name: "DD-MM-YYYY",
@@ -240,11 +247,6 @@ const dateFormatOptions = ref<Array<{ name: string; value: string }>>([
     value: "en-CA",
   },
 ]);
-// const separator = ref<string>("-");
-// const weekdayFormat = ref<{ name: string; value: string }>({
-//   name: "Not included",
-//   value: "none",
-// });
 const weekdayOptions = ref<Array<{ name: string; value: string }>>([
   {
     name: "Not included",
@@ -259,10 +261,6 @@ const weekdayOptions = ref<Array<{ name: string; value: string }>>([
     value: "long",
   },
 ]);
-// const language = ref<{ name: string; value: string }>({
-//   name: "English",
-//   value: "en-US",
-// });
 const langOptions = ref<Array<{ name: string; value: string }>>([
   {
     name: "English",
@@ -320,6 +318,10 @@ async function getEntries() {
       endDate: endDate.value,
     },
   }).then(res => {
+    notificationStore.add({
+      type: "success",
+      message: "Entries fetched successfully ⌚",
+    });
     return res.data;
   });
 

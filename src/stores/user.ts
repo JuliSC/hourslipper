@@ -1,7 +1,8 @@
-import { Settings } from "@/interfaces/Settings";
+import { Settings } from "@/@types/Settings";
 import router from "@/router";
 import axios from "axios";
 import { defineStore } from "pinia";
+import { useNotificationStore } from "./notification";
 
 const userDefaults = {
   username: "",
@@ -62,7 +63,11 @@ export const useUserStore = defineStore({
       },
     },
   }),
-  getters: {},
+  getters: {
+    notificationStore() {
+      return useNotificationStore();
+    },
+  },
   actions: {
     signUp(email: string, username: string, password: string) {
       axios("http://localhost:3000/users", {
@@ -76,10 +81,21 @@ export const useUserStore = defineStore({
           password,
           isAdmin: false,
         },
-      }).then(res => {
-        this.setUserCredentials(res.data);
-        router.push("/");
-      });
+      })
+        .then(res => {
+          this.setUserCredentials(res.data);
+          router.push("/");
+          this.notificationStore.add({
+            message: `Welcome ${this.user.username}! 👋`,
+            type: "success",
+          });
+        })
+        .catch(err => {
+          this.notificationStore.add({
+            message: `Something went wrong. Please try again 🤔`,
+            type: "error",
+          });
+        });
     },
     login(email: string, password: string) {
       axios("http://localhost:3000/auth/login", {
@@ -93,13 +109,18 @@ export const useUserStore = defineStore({
         },
       })
         .then(res => {
-          console.log(res);
-
           this.setUserCredentials(res.data);
+          this.notificationStore.add({
+            message: `Welcome back ${this.user.username}! 👋`,
+            type: "success",
+          });
           router.push("/");
         })
         .catch(err => {
-          alert("Invalid credentials");
+          this.notificationStore.add({
+            message: "Invalid credentials. Please try again 🔐",
+            type: "error",
+          });
         });
     },
     autoLogin() {
@@ -117,11 +138,18 @@ export const useUserStore = defineStore({
           if (token && user) {
             this.user = JSON.parse(user);
             this.user.isAuthenticated = true;
+            this.notificationStore.add({
+              message: `Welcome back ${this.user.username}! 👋`,
+              type: "success",
+            });
           }
         })
         .catch(err => {
           this.logout();
-          alert("Invalid credentials");
+          this.notificationStore.add({
+            message: `Session expired. Please log in again 🔑`,
+            type: "error",
+          });
         });
     },
     logout() {
@@ -129,6 +157,11 @@ export const useUserStore = defineStore({
 
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+
+      this.notificationStore.add({
+        message: `Hope to see you again soon! 👋`,
+        type: "success",
+      });
       router.push("/login");
     },
     setUserCredentials(credentials: { user: User; accessToken: string }) {
@@ -163,6 +196,10 @@ export const useUserStore = defineStore({
         },
       }).then(res => {
         localStorage.setItem("user", JSON.stringify(this.user));
+        this.notificationStore.add({
+          message: `Settings saved successfully! 🎉`,
+          type: "success",
+        });
       });
     },
   },

@@ -4,6 +4,9 @@
       <div class="text-white text-2xl">
         <slot name="header"></slot>
       </div>
+      <div class="text-gray-300 text-base">
+        <slot name="subheader"></slot>
+      </div>
       <div class="text-gray-300">
         <slot name="body"></slot>
       </div>

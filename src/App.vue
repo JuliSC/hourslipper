@@ -2,6 +2,7 @@
   <div
     class="relative min-h-screen flex flex-col justify-center items-center background"
   >
+    <NotificationContainer />
     <RouterView />
     <FlexMenu class="fixed top-5 right-5 flex flex-col">
       <FloatingActionButton
@@ -34,17 +35,22 @@
 <script setup lang="ts">
 import FloatingActionButton from "./components/FloatingActionButton.vue";
 import FlexMenu from "./components/FlexMenu.vue";
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useUserStore } from "./stores/user";
 import router from "./router";
 import { useRoute } from "vue-router";
+import NotificationContainer from "./components/NotificationContainer.vue";
+import { useNotificationStore } from "./stores/notification";
 
 const userStore = useUserStore();
+const notificationStore = useNotificationStore();
 
 // Try auto login
-if (localStorage.getItem("token")) {
-  userStore.autoLogin();
-}
+onMounted(() => {
+  if (localStorage.getItem("token")) {
+    userStore.autoLogin();
+  }
+});
 
 const showMenu = ref<boolean>(false);
 

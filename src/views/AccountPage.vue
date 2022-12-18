@@ -1,12 +1,18 @@
 <template>
   <form
-    class="w-full md:w-1/2"
+    class="w-full md:w-1/3"
     action="POST"
     @submit.prevent="updateAccountSettings()"
   >
     <CardBase>
       <template #header>
         <h1>Hourslipper Settings</h1>
+      </template>
+      <template #subheader>
+        <p class="text-sm">
+          Welcome to your personal Hourslipper defaults page
+          {{ userStore.user.username }}!
+        </p>
       </template>
       <template #body>
         <div class="mt-4">

@@ -21,6 +21,7 @@ import {
   faEyeSlash,
   faClock,
   faTimes,
+  faClipboard,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
@@ -37,6 +38,7 @@ library.add(
   faEye,
   faEyeSlash,
   faClock,
+  faClipboard,
 );
 
 const app = createApp(App);
