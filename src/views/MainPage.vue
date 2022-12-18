@@ -1,6 +1,8 @@
 <template>
-  <div class="header">⌚ Hourslipper ⌚</div>
-  <div class="flex flex-row items-start">
+  <div class="text-4xl md:text-9xl mb-7 text-white text-shadow-md-offset">
+    ⌚ Hourslipper ⌚
+  </div>
+  <div class="block md:flex flex-row items-start">
     <div class="card relative">
       <div class="card-title">Fetch Entries</div>
       <article class="card-body">
@@ -8,8 +10,9 @@
           <InputField
             class="px-1"
             title="API Key"
+            type="password"
             placeholder="Ex: HS73HD9GHBF74GFDVFSD"
-            v-model="apiKey"
+            v-model="savedSettings.apiKey"
           >
             Get your API key
             <a
@@ -25,6 +28,7 @@
             <DateField
               title="From"
               dateType="start"
+              :value="lastMonth.toDateString()"
               @update-date="updateDate($event)"
             />
           </div>
@@ -32,6 +36,7 @@
             <DateField
               title="To"
               dateType="end"
+              :value="today.toDateString()"
               @update-date="updateDate($event)"
             />
           </div>
@@ -44,14 +49,14 @@
             <InputField
               title="Date Header"
               placeholder="Ex: Date"
-              v-model="dateHeader"
+              v-model="savedSettings.dateHeader"
             />
           </div>
           <div class="px-1">
             <InputField
               title="Hours Header"
               placeholder="Ex: Hours"
-              v-model="hoursHeader"
+              v-model="savedSettings.hoursHeader"
             />
           </div>
         </div>
@@ -60,19 +65,19 @@
             class="px-1"
             title="Hours Appended Text"
             placeholder="Ex: Work Hours"
-            v-model="hoursAppend"
+            v-model="savedSettings.hoursAppend"
           />
         </div>
         <div class="card-row">
           <SelectField
             class="px-1"
             title="Date Format"
-            v-model="dateFormat"
+            v-model="savedSettings.dateFormat"
             :options="dateFormatOptions"
           />
           <InputField
             class="px-1 flex-grow-0"
-            v-model="separator"
+            v-model="savedSettings.separator"
             title="separator"
           />
         </div>
@@ -80,13 +85,13 @@
           <SelectField
             class="px-1"
             title="Weekday"
-            v-model="weekdayFormat"
+            v-model="savedSettings.weekdayFormat"
             :options="weekdayOptions"
           />
           <SelectField
             class="px-1"
             title="Language"
-            v-model="language"
+            v-model="savedSettings.language"
             :options="langOptions"
           />
         </div>
@@ -106,21 +111,38 @@
         <table class="data-table" id="entry-table">
           <tr class="text-left">
             <th colspan="2">
-              Total {{ hoursHeader.trim().length > 0 ? hoursHeader : "Hours" }}
+              Total
+              {{
+                savedSettings.hoursHeader.trim().length > 0
+                  ? savedSettings.hoursHeader
+                  : "Hours"
+              }}
             </th>
           </tr>
           <tr>
-            <td>{{ total }} {{ hoursAppend }}</td>
+            <td>{{ total }} {{ savedSettings.hoursAppend }}</td>
           </tr>
           <tr class="text-left">
-            <th>{{ dateHeader.trim().length > 0 ? dateHeader : "Date" }}</th>
-            <th>{{ hoursHeader.trim().length > 0 ? hoursHeader : "Hours" }}</th>
+            <th>
+              {{
+                savedSettings.dateHeader.trim().length > 0
+                  ? savedSettings.dateHeader
+                  : "Date"
+              }}
+            </th>
+            <th>
+              {{
+                savedSettings.hoursHeader.trim().length > 0
+                  ? savedSettings.hoursHeader
+                  : "Hours"
+              }}
+            </th>
           </tr>
           <template v-if="entries.length > 0">
             <tr v-for="entry in entries" :key="entry.start">
               <td>{{ entry.start }}</td>
               <td class="text-right">
-                {{ `${entry.duration} ${hoursAppend}` }}
+                {{ `${entry.duration} ${savedSettings.hoursAppend}` }}
               </td>
             </tr>
           </template>
@@ -137,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import axios from "axios";
 import DateField from "@/components/DateField.vue";
 import InputField from "@/components/InputField.vue";
@@ -145,10 +167,9 @@ import SelectField from "@/components/SelectField.vue";
 import { NumberHelper } from "@/utils/NumberHelper";
 import { DateHelper } from "@/utils/DateHelper";
 import { ArrayHelper } from "@/utils/ArrayHelper";
+import { useUserStore } from "@/stores/user";
 
-// createUser();
-// callApi();
-// login();
+const userStore = useUserStore();
 
 // Types
 type Entry = {
@@ -156,20 +177,55 @@ type Entry = {
   duration: number;
 };
 
+const today = new Date();
+const lastMonth = new Date();
+// this day last month
+lastMonth.setMonth(today.getMonth() - 1);
+
 // Required for entries
-const apiKey = ref<string>("");
+
 const startDate = ref<string>("");
 const endDate = ref<string>("");
 const entries = ref<Entry[]>([]);
 
 // Options
-const hoursAppend = ref<string>("");
-const dateHeader = ref<string>("");
-const hoursHeader = ref<string>("");
-const dateFormat = ref<{ name: string; value: string }>({
-  name: "DD-MM-YYYY",
-  value: "en-UK",
+
+const settings = ref<{
+  apiKey: string;
+  hoursAppend: string;
+  dateHeader: string;
+  hoursHeader: string;
+  dateFormat: { name: string; value: string };
+  separator: string;
+  weekdayFormat: { name: string; value: string };
+  language: { name: string; value: string };
+}>({
+  apiKey: "",
+  hoursAppend: "",
+  dateHeader: "",
+  hoursHeader: "",
+  dateFormat: {
+    name: "DD-MM-YYYY",
+    value: "en-UK",
+  },
+  separator: "-",
+  weekdayFormat: {
+    name: "Not included",
+    value: "",
+  },
+  language: {
+    name: "English",
+    value: "en",
+  },
 });
+// const apiKey = ref<string>("");
+// const hoursAppend = ref<string>("");
+// const dateHeader = ref<string>("");
+// const hoursHeader = ref<string>("");
+// const dateFormat = ref<{ name: string; value: string }>({
+//   name: "DD-MM-YYYY",
+//   value: "en-UK",
+// });
 const dateFormatOptions = ref<Array<{ name: string; value: string }>>([
   {
     name: "DD-MM-YYYY",
@@ -184,11 +240,11 @@ const dateFormatOptions = ref<Array<{ name: string; value: string }>>([
     value: "en-CA",
   },
 ]);
-const separator = ref<string>("-");
-const weekdayFormat = ref<{ name: string; value: string }>({
-  name: "Not included",
-  value: "none",
-});
+// const separator = ref<string>("-");
+// const weekdayFormat = ref<{ name: string; value: string }>({
+//   name: "Not included",
+//   value: "none",
+// });
 const weekdayOptions = ref<Array<{ name: string; value: string }>>([
   {
     name: "Not included",
@@ -203,10 +259,10 @@ const weekdayOptions = ref<Array<{ name: string; value: string }>>([
     value: "long",
   },
 ]);
-const language = ref<{ name: string; value: string }>({
-  name: "English",
-  value: "en-US",
-});
+// const language = ref<{ name: string; value: string }>({
+//   name: "English",
+//   value: "en-US",
+// });
 const langOptions = ref<Array<{ name: string; value: string }>>([
   {
     name: "English",
@@ -219,35 +275,15 @@ const langOptions = ref<Array<{ name: string; value: string }>>([
 ]);
 const total = ref<number>(0);
 
+// Computed
+const savedSettings = computed(() => {
+  if (userStore.user.settings) {
+    return userStore.user.settings;
+  }
+  return settings.value;
+});
+
 // Functions
-function callApi() {
-  axios("http://localhost:3000/users", {
-    method: "GET",
-    headers: {
-      "Access-Control-Allow-Origin": true,
-    },
-  }).then(res => {
-    console.log(res.data);
-  });
-}
-
-function createUser() {
-  axios("http://localhost:3000/users", {
-    method: "POST",
-    headers: {
-      "Access-Control-Allow-Origin": true,
-    },
-    data: {
-      fullName: "Julius",
-      isAdmin: false,
-      email: "test@test.test",
-      password: "pass1234",
-    },
-  }).then(res => {
-    console.log(res.data);
-  });
-}
-
 function updateDate(e: Record<string, unknown>) {
   switch (e.dateType) {
     case "start":
@@ -277,12 +313,13 @@ async function getEntries() {
     },
     data: {
       username:
-        apiKey.value.length > 0 ? apiKey.value : import.meta.env.VITE_API_KEY,
+        savedSettings.value.apiKey.length > 0
+          ? savedSettings.value.apiKey
+          : import.meta.env.VITE_API_KEY,
       startDate: startDate.value,
       endDate: endDate.value,
     },
   }).then(res => {
-    console.log(res.data);
     return res.data;
   });
 
@@ -299,21 +336,21 @@ function formatEntries(entries: Entry[]) {
     // Formatting date
     formattedEntry.start = DateHelper.formatDate(
       entryDate,
-      dateFormat.value.value,
+      savedSettings.value.dateFormat.value,
     );
 
     // Setting separator
     formattedEntry.start = DateHelper.setSeparator(
       formattedEntry.start,
-      separator.value,
+      savedSettings.value.separator,
     );
 
     // Getting weekday
-    if (weekdayFormat.value.value !== "none") {
+    if (savedSettings.value.weekdayFormat.value !== "none") {
       const weekDay = DateHelper.getWeekDay(
         entryDate,
-        weekdayFormat.value.value,
-        language.value.value,
+        savedSettings.value.weekdayFormat.value,
+        savedSettings.value.language.value,
       );
       formattedEntry.start = `${weekDay} ${formattedEntry.start}`;
     }
@@ -370,9 +407,9 @@ function formatDuration(duration: number) {
 
 function copyTable(tableId: string) {
   selectTable(tableId);
-  let dataStr = `${dateHeader.value}\t${hoursHeader.value}\n`;
+  let dataStr = `${savedSettings.value.dateHeader}\t${savedSettings.value.hoursHeader}\n`;
   entries.value.forEach(entry => {
-    dataStr += `${entry.start}\t${entry.duration} ${hoursAppend.value}\n`;
+    dataStr += `${entry.start}\t${entry.duration} ${savedSettings.value.hoursAppend}\n`;
   });
   navigator.clipboard.writeText(dataStr);
 }

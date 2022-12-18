@@ -19,6 +19,7 @@ import { ref } from "vue";
 
 const props = defineProps({
   title: { type: String, required: true },
+  value: { type: String, default: Date.now() },
   dateType: { type: String, required: true },
 });
 
@@ -27,7 +28,9 @@ const options: Intl.DateTimeFormatOptions = {
   month: "2-digit",
   day: "2-digit",
 };
-const date = ref<string>(new Date().toLocaleString("en-CA", options));
+const date = ref<string>(
+  new Date(props.value).toLocaleString("en-CA", options),
+);
 
 const emit = defineEmits({
   updateDate(args) {

@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <CardBase class="w-96">
+  <form class="w-full md:w-96" action="POST" @submit.prevent="login()">
+    <CardBase>
       <template #header>
         <h1>Login</h1>
       </template>
@@ -23,14 +23,23 @@
       </template>
       <template #footer>
         <div>
-          <button @click="login()" class="btn mr-2">Login</button>
-          <a class="underline text-blue-500 hover:" href="/"
+          <button type="submit" class="btn mr-2">Login</button>
+          <!-- <a class="underline text-blue-500 hover:" href="/"
             >Forgot password?</a
-          >
+          > -->
+          <p class="text-xs mt-2">
+            Don't have an account? Sign up
+            <a
+              href="/login"
+              class="underline text-blue-500 hover:cursor-pointer"
+              @click.prevent="$router.push('/sign-up')"
+              >here</a
+            >
+          </p>
         </div>
       </template>
     </CardBase>
-  </div>
+  </form>
 </template>
 
 <script setup lang="ts">
