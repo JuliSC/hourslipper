@@ -16,7 +16,7 @@
           <InputField
             title="Password"
             type="password"
-            placeholder="Enter your email address"
+            placeholder="Enter your password"
             v-model="password"
           ></InputField>
         </div>
