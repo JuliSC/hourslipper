@@ -181,6 +181,10 @@
     border-radius: 10px;
   }
 
+  .btn.danger {
+    background-image: linear-gradient(to right, #ff416c 0%, #ff4b2b 100%);
+  }
+
   .btn:hover {
     background-position: right center; /* change the direction of the change here */
     color: #fff;

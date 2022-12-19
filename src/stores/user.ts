@@ -67,14 +67,14 @@ export const useUserStore = defineStore({
     notificationStore() {
       return useNotificationStore();
     },
+    getUser(): User {
+      return this.user;
+    },
   },
   actions: {
     signUp(email: string, username: string, password: string) {
       axios("/api/users", {
         method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": true,
-        },
         data: {
           username,
           email,
@@ -84,7 +84,7 @@ export const useUserStore = defineStore({
       })
         .then(res => {
           this.setUserCredentials(res.data);
-          router.push("/");
+          router.push("home");
           this.notificationStore.add({
             message: `Welcome ${this.user.username}! 👋`,
             type: "success",
@@ -100,9 +100,6 @@ export const useUserStore = defineStore({
     login(email: string, password: string) {
       axios("/api/auth/login", {
         method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": true,
-        },
         data: {
           email,
           password,
@@ -114,7 +111,7 @@ export const useUserStore = defineStore({
             message: `Welcome back ${this.user.username}! 👋`,
             type: "success",
           });
-          router.push("/");
+          router.push("home");
         })
         .catch(err => {
           this.notificationStore.add({
@@ -130,7 +127,6 @@ export const useUserStore = defineStore({
       axios("/api/auth/verify", {
         method: "GET",
         headers: {
-          "Access-Control-Allow-Origin": true,
           Authorization: `Bearer ${token}`,
         },
       })
@@ -145,7 +141,7 @@ export const useUserStore = defineStore({
           }
         })
         .catch(err => {
-          this.logout();
+          this.removeUserCredentials();
           this.notificationStore.add({
             message: `Session expired. Please log in again 🔑`,
             type: "error",
@@ -153,16 +149,11 @@ export const useUserStore = defineStore({
         });
     },
     logout() {
-      this.user = userDefaults;
-
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
+      this.removeUserCredentials();
       this.notificationStore.add({
         message: `Hope to see you again soon! 👋`,
         type: "success",
       });
-      router.push("/login");
     },
     setUserCredentials(credentials: { user: User; accessToken: string }) {
       const user: User = {
@@ -182,11 +173,18 @@ export const useUserStore = defineStore({
       localStorage.setItem("token", credentials.accessToken);
       localStorage.setItem("user", JSON.stringify(user));
     },
-    updateAccountSettings() {
+    removeUserCredentials() {
+      this.user = userDefaults;
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      router.push("login");
+    },
+    updateUserDefaults() {
       axios(`/api/users/settings`, {
         method: "PATCH",
         headers: {
-          "Access-Control-Allow-Origin": true,
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         data: {
@@ -196,6 +194,47 @@ export const useUserStore = defineStore({
         localStorage.setItem("user", JSON.stringify(this.user));
         this.notificationStore.add({
           message: `Settings saved successfully! 🎉`,
+          type: "success",
+        });
+      });
+    },
+    updateUserCredentials(email: string, username: string) {
+      axios("/api/users/", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        data: {
+          email: email,
+          username: username,
+        },
+      })
+        .then(res => {
+          this.user.email = email;
+          this.user.username = username;
+          localStorage.setItem("user", JSON.stringify(this.user));
+          this.notificationStore.add({
+            message: `Credentials updated successfully! 🎉`,
+            type: "success",
+          });
+        })
+        .catch(err => {
+          this.notificationStore.add({
+            message: `Something went wrong. Please try again 🤔`,
+            type: "error",
+          });
+        });
+    },
+    deleteAccount() {
+      axios("/api/users/", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }).then(res => {
+        this.removeUserCredentials();
+        this.notificationStore.add({
+          message: `Account deleted. Hope to see you again 😢`,
           type: "success",
         });
       });

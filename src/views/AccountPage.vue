@@ -1,18 +1,15 @@
 <template>
   <form
-    class="w-full md:w-1/3"
+    class="w-full md:w-1/2"
     action="POST"
-    @submit.prevent="updateAccountSettings()"
+    @submit.prevent="updateUserDefaults()"
   >
     <CardBase>
       <template #header>
         <h1>Hourslipper Settings</h1>
       </template>
       <template #subheader>
-        <p class="text-sm">
-          Welcome to your personal Hourslipper defaults page
-          {{ userStore.user.username }}!
-        </p>
+        <p class="text-sm">Your defaults for time entries</p>
       </template>
       <template #body>
         <div class="mt-4">
@@ -84,15 +81,125 @@
       </template>
     </CardBase>
   </form>
+  <form
+    class="w-full md:w-1/2"
+    action="POST"
+    @submit.prevent="updateUserCredentials()"
+  >
+    <CardBase>
+      <template #header>
+        <h1>Account Settings</h1>
+      </template>
+      <template #subheader>
+        <p class="text-sm">Manage your account settings!</p>
+      </template>
+      <template #body>
+        <div class="mt-4">
+          <InputField
+            title="Email"
+            type="text"
+            placeholder="Enter your toggl API key"
+            v-model="email"
+          ></InputField>
+        </div>
+        <div class="mt-4">
+          <InputField
+            title="Username"
+            type="text"
+            placeholder="Enter your toggl API key"
+            v-model="username"
+          ></InputField>
+        </div>
+        <FormValidators class="mt-4" :validities="validities"></FormValidators>
+      </template>
+      <template #footer>
+        <div>
+          <button
+            :class="{ disabled: !formValid }"
+            type="submit"
+            class="btn mr-2"
+          >
+            Save
+          </button>
+        </div>
+      </template>
+    </CardBase>
+  </form>
+  <form class="w-full md:w-1/2" action="POST" @submit.prevent="deleteAccount()">
+    <CardBase>
+      <template #header>
+        <h1>Delete Account</h1>
+      </template>
+      <template #subheader>
+        <p class="text-sm">Delete your account</p>
+      </template>
+      <template #body>
+        <div class="mt-4">
+          <p class="text-sm">
+            This will delete your account and all associated data. This action
+            is irreversible.
+          </p>
+        </div>
+        <div class="mt-4">
+          <p class="text-sm">
+            To confirm, please enter your username
+            <b>{{ userStore.user.username }}</b> below.
+          </p>
+          <InputField
+            type="text"
+            placeholder="Enter username as shown above"
+            v-model="deleteConfirmationUsername"
+          ></InputField>
+        </div>
+      </template>
+      <template #footer>
+        <div>
+          <button
+            :class="{
+              disabled: deleteConfirmationUsername !== userStore.user.username,
+            }"
+            type="submit"
+            class="btn danger bg- mr-2"
+          >
+            Delete
+          </button>
+        </div>
+      </template>
+    </CardBase>
+  </form>
 </template>
 
 <script setup lang="ts">
 import CardBase from "@/components/CardBase.vue";
 import InputField from "@/components/InputField.vue";
 import SelectField from "@/components/SelectField.vue";
+import FormValidators from "@/components/FormValidators.vue";
 import { useUserStore } from "@/stores/user";
-import { ref } from "vue";
+import { validateEmail, validateUsername } from "@/utils/Validator";
+import { computed, ref, watchEffect } from "vue";
 const userStore = useUserStore();
+
+const email = ref<string>("");
+const username = ref<string>("");
+const deleteConfirmationUsername = ref<string>("");
+
+watchEffect(() => {
+  email.value = userStore.user.email;
+  username.value = userStore.user.username;
+});
+
+// Validation
+const validities = computed(() => {
+  return [...validateEmail(email.value), ...validateUsername(username.value)];
+});
+
+const formValid = computed(() => {
+  return (
+    validities.value.filter(validity => {
+      return validity.valid === false;
+    }).length === 0
+  );
+});
 
 const dateFormat = ref<{ name: string; value: string }>({
   name: "DD-MM-YYYY",
@@ -151,8 +258,16 @@ const weekdayOptions = ref<Array<{ name: string; value: string }>>([
   },
 ]);
 
-function updateAccountSettings() {
-  userStore.updateAccountSettings();
+function updateUserDefaults() {
+  userStore.updateUserDefaults();
+}
+
+function updateUserCredentials() {
+  userStore.updateUserCredentials(email.value, username.value);
+}
+
+function deleteAccount() {
+  userStore.deleteAccount();
 }
 </script>
 

@@ -26,6 +26,13 @@ const router = createRouter({
       path: "/account",
       name: "account",
       component: AccountPage,
+      beforeEnter: (to, from, next) => {
+        if (localStorage.getItem("token")) {
+          next();
+        } else {
+          next("/login");
+        }
+      },
     },
     {
       path: "/:pathMatch(.*)*",

@@ -306,9 +306,6 @@ async function generateEntryTable() {
 async function getEntries() {
   const entries: Entry[] = await axios("/api/toggl", {
     method: "POST",
-    headers: {
-      "Access-Control-Allow-Origin": true,
-    },
     data: {
       username: savedSettings.value.apiKey,
       startDate: startDate.value,

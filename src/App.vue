@@ -21,10 +21,10 @@
           @click="handleMenuItemClick(item)"
           class="mb-4 transition-all ease-in-out duration-300"
           :class="{
-            'shadow-white': item.to === useRoute().path,
-            'shadow-4xl': item.to === useRoute().path,
-            'text-gray-300': item.to !== useRoute().path,
-            'hover:text-white': item.to !== useRoute().path,
+            'shadow-white': item.to === useRoute().name,
+            'shadow-4xl': item.to === useRoute().name,
+            'text-gray-300': item.to !== useRoute().name,
+            'hover:text-white': item.to !== useRoute().name,
           }"
         />
       </template>
@@ -35,18 +35,16 @@
 <script setup lang="ts">
 import FloatingActionButton from "./components/FloatingActionButton.vue";
 import FlexMenu from "./components/FlexMenu.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import { useUserStore } from "./stores/user";
 import router from "./router";
 import { useRoute } from "vue-router";
 import NotificationContainer from "./components/NotificationContainer.vue";
-import { useNotificationStore } from "./stores/notification";
 
 const userStore = useUserStore();
-const notificationStore = useNotificationStore();
 
 // Try auto login
-onMounted(() => {
+onBeforeMount(() => {
   if (localStorage.getItem("token")) {
     userStore.autoLogin();
   }
@@ -59,31 +57,31 @@ const menuItems = computed(() => {
     {
       icon: "fas fa-right-to-bracket",
       text: "Log In",
-      to: "/login",
+      to: "login",
       show: userStore.user.isAuthenticated === false,
     },
     {
       icon: "fas fa-right-from-bracket",
       text: "Log Out",
-      to: "/log-out",
+      to: "log-out",
       show: userStore.user.isAuthenticated === true,
     },
     {
       icon: "fas fa-user-plus",
       text: "Sign Up",
-      to: "/sign-up",
+      to: "sign-up",
       show: userStore.user.isAuthenticated === false,
     },
     {
       icon: "fas fa-clock",
       text: "Hourslipper",
-      to: "/",
+      to: "home",
       show: true,
     },
     {
       icon: "fas fa-user",
       text: "Account Settings",
-      to: "/account",
+      to: "account",
       show: userStore.user.isAuthenticated === true,
     },
   ];
@@ -104,7 +102,7 @@ const handleMenuIcon = computed(() => {
 });
 
 function handleMenuItemClick(item: { to: string }) {
-  if (item.to === "/log-out") {
+  if (item.to === "log-out") {
     userStore.logout();
   } else {
     router.push(item.to);

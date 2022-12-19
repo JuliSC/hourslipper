@@ -35,15 +35,12 @@
             v-model="passwordConfirmation"
           ></InputField>
         </div>
-        <FormValidators
-          class="mt-4"
-          :errors="validationErrors"
-        ></FormValidators>
+        <FormValidators class="mt-4" :validities="validities"></FormValidators>
       </template>
       <template #footer>
         <div>
           <button
-            :class="{ disabled: validationErrors.length > 0 }"
+            :class="{ disabled: !formValid }"
             type="submit"
             class="btn mr-2"
           >
@@ -54,7 +51,7 @@
             <a
               href="/login"
               class="underline text-blue-500 hover:cursor-pointer"
-              @click.prevent="$router.push('/login')"
+              @click.prevent="$router.push('login')"
               >here</a
             >
           </p>
@@ -70,6 +67,12 @@ import InputField from "@/components/InputField.vue";
 import FormValidators from "@/components/FormValidators.vue";
 import { computed, ref } from "vue";
 import { useUserStore } from "@/stores/user";
+import {
+  validateEmail,
+  validatePassword,
+  validatePasswordConfirmation,
+  validateUsername,
+} from "@/utils/Validator";
 
 // Stores
 const userStore = useUserStore();
@@ -81,63 +84,21 @@ const password = ref<string>("");
 const passwordConfirmation = ref<string>("");
 
 // Validation
-function validateEmail(email: string) {
-  const errors: Array<string> = [];
-  if (!email) {
-    errors.push("Email is required");
-  }
-
-  const regex =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  if (!regex.test(String(email).toLowerCase())) {
-    errors.push("Please enter a valid email address");
-  }
-  return errors;
-}
-
-function validatePassword(password: string) {
-  const errors: Array<string> = [];
-  if (!password) {
-    errors.push("Password is required");
-  }
-
-  if (password.length < 6) {
-    errors.push("Password must be at least 6 characters");
-  }
-  return errors;
-}
-
-function validatePasswordConfirmation(passwordConfirmation: string) {
-  const errors: Array<string> = [];
-  if (!passwordConfirmation) {
-    errors.push("Password confirmation is required");
-  }
-
-  if (!passwordConfirmation || passwordConfirmation !== password.value) {
-    errors.push("Passwords must match");
-  }
-  return errors;
-}
-
-function validateUsername(username: string) {
-  const errors: Array<string> = [];
-  if (!username) {
-    errors.push("Username is required");
-  }
-
-  if (username.length < 3) {
-    errors.push("Username must be at least 3 characters");
-  }
-  return errors;
-}
-
-const validationErrors = computed(() => {
+const validities = computed(() => {
   return [
     ...validateEmail(email.value),
     ...validateUsername(username.value),
     ...validatePassword(password.value),
-    ...validatePasswordConfirmation(passwordConfirmation.value),
+    ...validatePasswordConfirmation(passwordConfirmation.value, password.value),
   ];
+});
+
+const formValid = computed(() => {
+  return (
+    validities.value.filter(validity => {
+      return validity.valid === false;
+    }).length === 0
+  );
 });
 
 function signUp() {

@@ -2,26 +2,25 @@
   <div>
     <p
       :class="{
-        'text-green-300': checkValidation(error),
+        'text-green-300': validity.valid,
       }"
       class="opacity-75 text-xs"
-      v-for="error in initialErrors"
-      :key="error"
+      v-for="validity in validities"
+      :key="validity.message"
     >
-      <font-awesome-icon :icon="handleIcon(checkValidation(error))" />
-      {{ error }}
+      <font-awesome-icon :icon="handleIcon(validity.valid)" />
+      {{ validity.message }}
     </p>
   </div>
 </template>
 
 <script setup lang="ts">
 const props = defineProps({
-  errors: { type: Array<string | undefined>, default: () => [] },
+  validities: {
+    type: Array<{ message: string; valid: boolean }>,
+    default: () => [],
+  },
 });
-
-function checkValidation(error: string | undefined) {
-  return !props.errors.includes(error);
-}
 
 function handleIcon(validation: boolean) {
   switch (validation) {
@@ -33,9 +32,6 @@ function handleIcon(validation: boolean) {
       return "fas fa-times-circle";
   }
 }
-
-// eslint-disable-next-line vue/no-setup-props-destructure
-const initialErrors = props.errors;
 </script>
 
 <style scoped></style>

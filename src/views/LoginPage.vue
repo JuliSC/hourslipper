@@ -24,15 +24,12 @@
       <template #footer>
         <div>
           <button type="submit" class="btn mr-2">Login</button>
-          <!-- <a class="underline text-blue-500 hover:" href="/"
-            >Forgot password?</a
-          > -->
           <p class="text-xs mt-2">
             Don't have an account? Sign up
             <a
               href="/login"
               class="underline text-blue-500 hover:cursor-pointer"
-              @click.prevent="$router.push('/sign-up')"
+              @click.prevent="$router.push('sign-up')"
               >here</a
             >
           </p>
