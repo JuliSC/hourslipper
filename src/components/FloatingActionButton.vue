@@ -7,8 +7,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-
 const props = defineProps({
   icon: { type: String, required: true },
   text: { type: String, required: true },
