@@ -1,0 +1,11 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.web.json",
+  "include": ["./**/*", "../support/**/*"],
+  "compilerOptions": {
+    "baseUrl": "http://localhost:4173",
+    "isolatedModules": false,
+    "target": "es5",
+    "lib": ["es5", "dom"],
+    "types": ["cypress"]
+  }
+}

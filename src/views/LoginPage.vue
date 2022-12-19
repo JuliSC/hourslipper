@@ -7,6 +7,7 @@
       <template #body>
         <div class="mt-4">
           <InputField
+            data-cy="email-input"
             title="Email address"
             placeholder="Enter your email address"
             v-model="email"
@@ -14,6 +15,7 @@
         </div>
         <div class="mt-4">
           <InputField
+            data-cy="password-input"
             title="Password"
             type="password"
             placeholder="Enter your password"
@@ -23,7 +25,9 @@
       </template>
       <template #footer>
         <div>
-          <button type="submit" class="btn mr-2">Login</button>
+          <button data-cy="login-button" type="submit" class="btn mr-2">
+            Login
+          </button>
           <p class="text-xs mt-2">
             Don't have an account? Sign up
             <a

@@ -98,6 +98,7 @@
       </article>
       <div class="card-actions">
         <button
+          data-cy="fetch-entries-button"
           :class="{ disabled: !savedSettings.apiKey }"
           class="btn"
           @click="generateEntryTable"
@@ -114,17 +115,7 @@
           </span>
         </div>
 
-        <table class="data-table" id="entry-table">
-          <tr class="text-left">
-            <th colspan="2">
-              Total
-              {{
-                savedSettings.hoursHeader.trim().length > 0
-                  ? savedSettings.hoursHeader
-                  : "Hours"
-              }}
-            </th>
-          </tr>
+        <table data-cy="entry-table" class="data-table" id="entry-table">
           <tr>
             <td>{{ total }} {{ savedSettings.hoursAppend }}</td>
           </tr>
@@ -145,7 +136,11 @@
             </th>
           </tr>
           <template v-if="entries.length > 0">
-            <tr v-for="entry in entries" :key="entry.start">
+            <tr
+              :data-cy="`entry-${i}`"
+              v-for="(entry, i) in entries"
+              :key="entry.start"
+            >
               <td>{{ entry.start }}</td>
               <td class="text-right">
                 {{ `${entry.duration} ${savedSettings.hoursAppend}` }}
