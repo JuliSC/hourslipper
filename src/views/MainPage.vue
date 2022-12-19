@@ -97,7 +97,11 @@
         </div>
       </article>
       <div class="card-actions">
-        <button class="btn" @click="generateEntryTable">
+        <button
+          :class="{ disabled: !savedSettings.apiKey }"
+          class="btn"
+          @click="generateEntryTable"
+        >
           Fetch Time Entries
         </button>
       </div>
@@ -311,13 +315,21 @@ async function getEntries() {
       startDate: startDate.value,
       endDate: endDate.value,
     },
-  }).then(res => {
-    notificationStore.add({
-      type: "success",
-      message: "Entries fetched successfully ⌚",
+  })
+    .then(res => {
+      notificationStore.add({
+        type: "success",
+        message: "Entries fetched successfully ⌚",
+      });
+      return res.data;
+    })
+    .catch(err => {
+      notificationStore.add({
+        type: "error",
+        message: "Error fetching entries. Check API Key and try again 💡",
+      });
+      return [];
     });
-    return res.data;
-  });
 
   return entries;
 }

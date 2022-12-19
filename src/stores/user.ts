@@ -14,17 +14,17 @@ const userDefaults = {
     dateHeader: "",
     hoursHeader: "",
     dateFormat: {
-      name: "",
-      value: "",
+      name: "DD-MM-YYYY",
+      value: "en-UK",
     },
-    separator: "",
+    separator: "-",
     weekdayFormat: {
-      name: "",
-      value: "",
+      name: "Not included",
+      value: "none",
     },
     language: {
-      name: "",
-      value: "",
+      name: "English",
+      value: "english",
     },
   },
 };
